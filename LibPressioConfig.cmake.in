@@ -1,0 +1,6 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/LibPressioTargets.cmake")
+
+find_package(std_compat REQUIRED)
+check_required_components(LibPressio)

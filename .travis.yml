@@ -1,0 +1,62 @@
+language: cpp
+dist: bionic
+matrix:
+  include:
+    - os: linux
+      env:
+        - CC=gcc-7
+        - CXX=g++-7
+        - EXTRA_BUILD_ARGS=
+    - os: linux
+      env:
+        - CC=gcc-4.8
+        - CXX=g++-4.8
+        - EXTRA_BUILD_ARGS=-DLIBPRESSIO_CXX_VERSION=11
+      addons:
+        apt:
+          packages:
+            - gcc-4.8
+            - g++-4.8
+            - libboost-dev
+            - doxygen
+            - graphviz
+            - libhdf5-dev
+            - libmagick++-dev
+            - libblosc-dev
+    - os: linux
+      env:
+        - CC=clang
+        - CXX=clang++
+        - EXTRA_BUILD_ARGS=
+
+addons:
+  apt:
+    packages:
+      - doxygen
+      - graphviz
+      - libhdf5-dev
+      - libmagick++-dev
+      - libblosc-dev
+
+before_install:
+  - wget -O cmake.sh https://github.com/Kitware/CMake/releases/download/v3.14.6/cmake-3.14.6-Linux-x86_64.sh
+  - sudo sh cmake.sh --skip-licence --exclude-subdir --prefix=/usr/local
+  - export PATH=/usr/local/bin:$PATH
+  - cmake --version
+
+script:
+  - mkdir build
+  - cd build
+  - cmake .. -DCMAKE_BUILD_TYPE=Release -DLIBPRESSIO_HAS_SZ=OFF -DBUILD_DOCS=ON $EXTRA_BUILD_ARGS
+  - cmake --build .
+  - cmake --build . --target docs
+  - ctest
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  local_dir: build/html
+  github_token: $GH_REPO_TOKEN
+  on:
+    branch: master
+    condition: $CC = clang
